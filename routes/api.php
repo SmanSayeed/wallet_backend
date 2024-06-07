@@ -1,6 +1,9 @@
 <?php
 
-use App\Http\Controllers\Api\V1\UserController;
+use App\Helpers\ResponseHelper;
+use App\Http\Controllers\Api\V1\Auth\AuthController;
+use App\Http\Controllers\Api\V1\Users\ProfileController;
+use App\Http\Controllers\Api\V1\Users\UsersController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,10 +25,31 @@ Route::prefix('v1')->group(function () {
         return response()->json(['message' => 'Welcome to the Moby API.']);
         });
 
-    Route::post('/register', [UserController::class, 'register']);
-    Route::post('/login', [UserController::class, 'login']);
-    Route::get('/verify-email/{id}/{hash}', [UserController::class, 'verify'])->name('verification.verify')->middleware(['auth:api', 'signed']);
-    Route::post('/login', [UserController::class, 'login'])->middleware(['verified']);
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::get('/login', [AuthController::class, 'login']);
+    Route::get('/verify-email/{id}/{hash}', [AuthController::class, 'verify'])->name('verification.verify')->middleware(['auth:api', 'signed']);
+    Route::post('/login', [AuthController::class, 'login']);
+    // ->middleware(['verified']);
 
-    Route::get('/users', [UserController::class, 'users']);
+    Route::get('/users', [UsersController::class, 'users']);
+    Route::get('/email/verify', function () {
+        // Your email verification view logic here
+    })->name('verification.notice');
+
+    Route::middleware('auth:api')->group(function () {
+        // Define your authenticated users routes here
+        Route::get('/user/profile', [ProfileController::class, 'show']);
+        Route::post('/logout', [AuthController::class, 'logout']);
+
+
+        // Add more authenticated routes as needed
+    });
+
+    /* route for unauthorized token */
+    Route::get('/unauthorized', function () {
+        return ResponseHelper::error('Unauthorized', null, 401);
+    })->name('unauthorized');
+
+
+
 });

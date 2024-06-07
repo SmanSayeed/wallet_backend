@@ -2,19 +2,20 @@
 
 namespace App\Services;
 
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use App\Helpers\ResponseHelper;
 
 class LoginService
 {
     public function login(array $credentials)
     {
         if (!Auth::attempt($credentials)) {
-            return false;
+            return ResponseHelper::error('Invalid credentials', null, 401);
         }
+
         $user = Auth::user();
         $token = $user->createToken('Personal Access Token')->accessToken;
 
-        return ['token' => $token];
+        return ResponseHelper::success('Login successful', ['token' => $token]);
     }
 }

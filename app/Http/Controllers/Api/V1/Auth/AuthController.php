@@ -1,6 +1,5 @@
 <?php
-// app/Http/Controllers/Api/V1/UserController.php
-namespace App\Http\Controllers\Api\V1;
+namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
@@ -12,7 +11,7 @@ use App\Http\Requests\LoginUserRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
-class UserController extends Controller
+class AuthController extends Controller
 {
     protected $registrationService;
     protected $loginService;
@@ -30,8 +29,20 @@ class UserController extends Controller
         return ResponseHelper::success('User registered successfully', $user, 201);
     }
 
+
     public function login(LoginUserRequest $request)
     {
-        // login logic
+        $credentials = $request->validated();
+        return $this->loginService->login($credentials);
     }
+
+    public function logout(Request $request)
+    {
+        // Revoke the access token
+        $request->user()->token()->revoke();
+
+        // Return success response
+        return ResponseHelper::success('User logged out successfully');
+    }
+
 }

@@ -56,7 +56,7 @@ class VerifyEmail extends Mailable
     {
         return $this->view('emails.verify')
             ->with([
-                'verificationUrl' => $this->verificationUrl($this->user),
+                // 'verificationUrl' => $this->verificationUrl($this->user),
             ]);
     }
 
