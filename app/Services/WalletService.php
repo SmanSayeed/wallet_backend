@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Wallet;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class WalletService
 {
@@ -12,8 +13,15 @@ class WalletService
         return $user->wallets()->get();
     }
 
+    private function checkIfSameUser($user_id){
+        return Auth::user()->id==$user_id;
+    }
+
     public function createWallet(User $user, array $data)
     {
+        if (!$this->checkIfSameUser($data->user_id)) {
+            return false;
+        }
         return $user->wallets()->create($data);
     }
 
