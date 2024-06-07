@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Wallet;
@@ -8,7 +9,7 @@ class WalletService
 {
     public function getAllWallets(User $user)
     {
-        return $user->wallets()->with('currency')->get();
+        return $user->wallets()->get();
     }
 
     public function createWallet(User $user, array $data)
@@ -16,14 +17,14 @@ class WalletService
         return $user->wallets()->create($data);
     }
 
-    public function getWalletById(User $user, $id)
+    public function getWalletById(User $user, $walletId)
     {
-        return $user->wallets()->with('currency')->find($id);
+        return $user->wallets()->find($walletId);
     }
 
-    public function updateWallet(User $user, $id, array $data)
+    public function updateWallet(User $user, $walletId, array $data)
     {
-        $wallet = $user->wallets()->find($id);
+        $wallet = $user->wallets()->find($walletId);
 
         if ($wallet) {
             $wallet->update($data);
@@ -32,12 +33,13 @@ class WalletService
         return $wallet;
     }
 
-    public function deleteWallet(User $user, $id)
+    public function deleteWallet(User $user, $walletId)
     {
-        $wallet = $user->wallets()->find($id);
+        $wallet = $user->wallets()->find($walletId);
 
         if ($wallet) {
-            return $wallet->delete();
+            $wallet->delete();
+            return true;
         }
 
         return false;
