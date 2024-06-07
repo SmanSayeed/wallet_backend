@@ -12,7 +12,7 @@ class Wallet extends Model
 
     protected $fillable = [
         'balance',
-        'currency_id',
+        'currency_code',
         'slug',
         'user_id',
         'currency_id'

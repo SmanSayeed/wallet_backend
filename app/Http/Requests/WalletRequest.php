@@ -13,7 +13,7 @@ class WalletRequest extends FormRequest
     public function rules()
     {
         return [
-            'currency_id' => 'required|exists:currencies,id',
+            'currency_code' => 'required|exists:currencies,currency_code',
         ];
     }
 }
