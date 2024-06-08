@@ -21,10 +21,13 @@ class WalletDenominationService
         ]);
 
         // Increment wallet balance by the denomination amount multiplied by the quantity
-        $wallet->increment('balance', $denomination->amount * $amount);
+    $wallet->increment('balance', $denomination->amount * $amount);
 
-        // Return the attached denomination
-        return $wallet->denominations()->where('denomination_id', $denominationId)->first();
+    // Retrieve the attached denomination with pivot data
+    $attachedDenomination = $wallet->denominations()->withPivot('amount')->find($denominationId);
+
+    // Return the attached denomination with pivot data
+    return $attachedDenomination;
     }
 
     public function detachDenomination($walletId, $denominationId)

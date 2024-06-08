@@ -1,44 +1,39 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Transaction;
 use App\Models\User;
-use App\Models\Wallet;
+use Illuminate\Support\Facades\Log;
 
 class TransactionService
 {
     public function getAllTransactions(User $user)
     {
-        return $user->transactions()->with('wallet')->get();
+        return Transaction::where('user_id', $user->id)->get();
     }
 
     public function createTransaction(User $user, array $data)
     {
-        $wallet = $user->wallets()->find($data['wallet_id']);
+        // Simulate payment gateway interaction
+        $this->processPaymentGateway($data);
 
-        if ($data['type'] === 'withdraw' && $wallet->balance < $data['amount']) {
-            return null;
-        }
-
-        $transaction = $user->transactions()->create($data);
-
-        if ($data['type'] === 'add') {
-            $wallet->increment('balance', $data['amount']);
-        } else {
-            $wallet->decrement('balance', $data['amount']);
-        }
+        // Create the transaction
+        $transaction = new Transaction($data);
+        $transaction->user_id = $user->id;
+        $transaction->save();
 
         return $transaction;
     }
 
     public function getTransactionById(User $user, $id)
     {
-        return $user->transactions()->with('wallet')->find($id);
+        return Transaction::where('user_id', $user->id)->find($id);
     }
 
     public function updateTransaction(User $user, $id, array $data)
     {
-        $transaction = $user->transactions()->find($id);
+        $transaction = Transaction::where('user_id', $user->id)->find($id);
 
         if ($transaction) {
             $transaction->update($data);
@@ -49,18 +44,30 @@ class TransactionService
 
     public function deleteTransaction(User $user, $id)
     {
-        $transaction = $user->transactions()->find($id);
+        $transaction = Transaction::where('user_id', $user->id)->find($id);
 
         if ($transaction) {
-            $wallet = $transaction->wallet;
-            if ($transaction->type === 'add') {
-                $wallet->decrement('balance', $transaction->amount);
-            } else {
-                $wallet->increment('balance', $transaction->amount);
-            }
             return $transaction->delete();
         }
 
         return false;
+    }
+
+    public function getUserTransactions($userId)
+    {
+        return Transaction::where('user_id', $userId)->get();
+    }
+
+    private function processPaymentGateway($data)
+    {
+        // Dummy payment gateway processing logic
+        Log::info('Processing payment gateway with data:', $data);
+
+        // Simulate payment success or failure
+        if (rand(0, 1) == 1) {
+            return true;
+        } else {
+            throw new \Exception('Payment gateway error.');
+        }
     }
 }

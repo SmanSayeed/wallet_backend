@@ -16,7 +16,6 @@ class TransactionRequest extends FormRequest
             'wallet_id' => 'required|exists:wallets,id',
             'amount' => 'required|numeric|min:0.01',
             'type' => 'required|in:add,withdraw',
-            'description' => 'nullable|string|max:255',
         ];
     }
 }

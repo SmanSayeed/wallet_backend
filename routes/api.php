@@ -86,6 +86,12 @@ Route::middleware('auth:api')->prefix('v1')->group(function () {
     Route::patch('currencies/{currency}/denominations/{denomination}/restore', [DenominationController::class, 'restore'])
     ->name('currencies.denominations.restore');
 
+
+
+    // Transactions
+    Route::apiResource('transactions', TransactionController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
+    Route::get('user/transactions', [TransactionController::class, 'userTransactions']);
+
 });
 
 
