@@ -20,5 +20,11 @@ class Wallet extends Model
         return $this->belongsTo(User::class);
     }
 
-    // Other relationships and methods...
+    public function denominations()
+    {
+        return $this->belongsToMany(Denomination::class, 'wallet_denomination')
+                    ->withTimestamps();
+    }
+
+
 }

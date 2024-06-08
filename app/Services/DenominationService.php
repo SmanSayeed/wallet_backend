@@ -1,54 +1,74 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Denomination;
-use App\Models\Wallet;
+use App\Models\Currency;
 
 class DenominationService
 {
-    public function getAllDenominations($walletId)
+    public function getAllDenominations($currencyId)
     {
-        $wallet = Wallet::findOrFail($walletId);
-        return $wallet->denominations;
+        $currency = Currency::findOrFail($currencyId);
+        return $currency->denominations;
     }
 
-    public function createDenomination($walletId, array $data)
+    public function createDenomination($currencyId, array $data)
     {
-        $wallet = Wallet::findOrFail($walletId);
-        $denomination = new Denomination($data);
-        $wallet->denominations()->save($denomination);
-        $wallet->increment('balance', $denomination->amount);
-        return $denomination;
+        $currency = Currency::findOrFail($currencyId);
+        $data['currency_id'] = $currency->id;
+        return Denomination::create($data);
     }
 
-    public function getDenominationById($walletId, $id)
+    public function getDenominationById($currencyId, $id)
     {
-        $wallet = Wallet::findOrFail($walletId);
-        return $wallet->denominations()->find($id);
+        $currency = Currency::findOrFail($currencyId);
+        return $currency->denominations()->find($id);
     }
 
-    public function updateDenomination($walletId, $id, array $data)
+    public function updateDenomination($currencyId, $id, array $data)
     {
-        $wallet = Wallet::findOrFail($walletId);
-        $denomination = $wallet->denominations()->find($id);
+        $currency = Currency::findOrFail($currencyId);
+        $denomination = $currency->denominations()->find($id);
 
         if ($denomination) {
-            $wallet->decrement('balance', $denomination->amount);
             $denomination->update($data);
-            $wallet->increment('balance', $denomination->amount);
         }
 
         return $denomination;
     }
 
-    public function deleteDenomination($walletId, $id)
+    public function deleteDenomination($currencyId, $id)
     {
-        $wallet = Wallet::findOrFail($walletId);
-        $denomination = $wallet->denominations()->find($id);
+        $currency = Currency::findOrFail($currencyId);
+        $denomination = $currency->denominations()->find($id);
 
         if ($denomination) {
-            $wallet->decrement('balance', $denomination->amount);
             return $denomination->delete();
+        }
+
+        return false;
+    }
+
+    public function forceDeleteDenomination($currencyId, $id)
+    {
+        $currency = Currency::findOrFail($currencyId);
+        $denomination = $currency->denominations()->withTrashed()->find($id);
+
+        if ($denomination) {
+            return $denomination->forceDelete();
+        }
+
+        return false;
+    }
+
+    public function restoreDenomination($currencyId, $id)
+    {
+        $currency = Currency::findOrFail($currencyId);
+        $denomination = $currency->denominations()->onlyTrashed()->find($id);
+
+        if ($denomination) {
+            return $denomination->restore();
         }
 
         return false;

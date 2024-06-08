@@ -3,7 +3,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class DenominationRequest extends FormRequest
+class WalletDenominationRequest extends FormRequest
 {
     public function authorize()
     {
@@ -13,8 +13,8 @@ class DenominationRequest extends FormRequest
     public function rules()
     {
         return [
-            'title' => 'required|string|max:255',
-            'amount' => 'required|numeric|min:0.01',
+            'wallet_id' => 'required|exists:wallets,id',
+            'denomination_id' => 'required|exists:denominations,id',
         ];
     }
 }

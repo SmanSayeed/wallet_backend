@@ -8,4 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class Currency extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'code',
+        'name',
+    ];
+
+    public function denominations()
+    {
+        return $this->hasMany(Denomination::class);
+    }
 }

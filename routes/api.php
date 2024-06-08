@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Users\ProfileController;
 use App\Http\Controllers\Api\V1\Users\UsersController;
 use App\Http\Controllers\Api\V1\Wallets\CurrencyController;
 use App\Http\Controllers\Api\V1\Wallets\TransactionController;
+use App\Http\Controllers\Api\V1\Wallets\WalletDenominationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\Wallets\WalletController;
@@ -61,15 +62,28 @@ Route::middleware('auth:api')->prefix('v1')->group(function () {
     // Wallet routes
     Route::resource('wallets', WalletController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
 
-    // Denomination routes
-    Route::get('wallets/{walletId}/denominations', [DenominationController::class, 'index']);
-    Route::post('wallets/{walletId}/denominations', [DenominationController::class, 'store']);
-    Route::get('wallets/{walletId}/denominations/{id}', [DenominationController::class, 'show']);
-    Route::put('wallets/{walletId}/denominations/{id}', [DenominationController::class, 'update']);
-    Route::delete('wallets/{walletId}/denominations/{id}', [DenominationController::class, 'destroy']);
+
+
     // Currency routes
     Route::resource('currencies', CurrencyController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
 
     // Transaction routes
     Route::resource('transactions', TransactionController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
+
+    // Wallet Denomination routes
+    Route::post('/wallets/attach-denomination', [WalletDenominationController::class, 'attach'])->name('wallets.attach-denomination');
+    Route::delete('/wallets/detach-denomination', [WalletDenominationController::class, 'detach'])->name('wallets.detach-denomination');
+
+    // Denomination routes
+    Route::apiResource('currencies.denominations', DenominationController::class)
+    ->except(['create', 'edit']);
+
+    Route::delete('currencies/{currency}/denominations/{denomination}/force', [DenominationController::class, 'forceDestroy'])
+    ->name('currencies.denominations.forceDestroy');
+
+    Route::patch('currencies/{currency}/denominations/{denomination}/restore', [DenominationController::class, 'restore'])
+    ->name('currencies.denominations.restore');
+
 });
+
+
