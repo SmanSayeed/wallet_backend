@@ -11,6 +11,7 @@ class Currency extends Model
     protected $fillable = [
         'code',
         'name',
+        'symbol',
     ];
 
     public function denominations()

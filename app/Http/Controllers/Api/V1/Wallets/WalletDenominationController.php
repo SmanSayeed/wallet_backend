@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Services\WalletDenominationService;
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\WalletDenominationRequest;
+use App\Models\Denomination;
+use App\Models\Wallet;
 use Illuminate\Http\Request;
 
 class WalletDenominationController extends Controller
@@ -17,11 +19,20 @@ class WalletDenominationController extends Controller
         $this->walletDenominationService = $walletDenominationService;
     }
 
+    public function getDenominations($walletId)
+    {
+        $wallet = Wallet::with('denominations')->findOrFail($walletId);
+        return ResponseHelper::success('Denominations retrieved successfully', $wallet->denominations);
+    }
+
     public function attach(WalletDenominationRequest $request)
     {
+        $userId = $request->user()->id;
+        $currencyId = $request->input('currency_id');
         $walletId = $request->input('wallet_id');
         $denominationId = $request->input('denomination_id');
-        $walletDenomination = $this->walletDenominationService->attachDenomination($walletId, $denominationId);
+        $amount = $request->input('amount', 1); // Default amount to 1 if not provided
+        $walletDenomination = $this->walletDenominationService->attachDenomination($userId, $currencyId, $walletId, $denominationId, $amount);
         return ResponseHelper::success('Denomination attached to wallet successfully', $walletDenomination, 201);
     }
 
@@ -37,8 +48,4 @@ class WalletDenominationController extends Controller
 
         return ResponseHelper::success('Denomination detached from wallet successfully');
     }
-
-
-
-
 }

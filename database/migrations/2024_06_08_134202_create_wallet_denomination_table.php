@@ -13,9 +13,13 @@ return new class extends Migration
     {
         Schema::create('wallet_denomination', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('currency_id')->constrained()->onDelete('cascade');
             $table->foreignId('wallet_id')->constrained()->onDelete('cascade');
             $table->foreignId('denomination_id')->constrained()->onDelete('cascade');
+            $table->integer('amount')->default(1);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

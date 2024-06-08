@@ -11,8 +11,12 @@ class Wallet extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+
+        'name',
+        'slug',
         'balance',
         'currency_id',
+        'user_id',
     ];
 
     public function user()

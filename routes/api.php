@@ -71,6 +71,8 @@ Route::middleware('auth:api')->prefix('v1')->group(function () {
     Route::resource('transactions', TransactionController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
 
     // Wallet Denomination routes
+
+    Route::get('/wallets/{walletId}/get-denominations', [WalletDenominationController::class, 'getDenominations'])->name('wallets.get-denominations');
     Route::post('/wallets/attach-denomination', [WalletDenominationController::class, 'attach'])->name('wallets.attach-denomination');
     Route::delete('/wallets/detach-denomination', [WalletDenominationController::class, 'detach'])->name('wallets.detach-denomination');
 

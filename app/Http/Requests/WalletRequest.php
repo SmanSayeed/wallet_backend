@@ -13,6 +13,10 @@ class WalletRequest extends FormRequest
     public function rules()
     {
         return [
+            'name'=> 'required',
+            'slug'=>'required|string|max:255|unique:wallets,slug',
+            'user_id'=>'required|exists:users,id',
+            'balance'=>'numeric',
             'currency_id' => 'required|exists:currencies,id',
         ];
     }
