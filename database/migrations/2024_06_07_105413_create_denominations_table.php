@@ -11,10 +11,9 @@ class CreateDenominationsTable extends Migration
     {
         Schema::create('denominations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('wallet_id')->constrained()->onDelete('cascade');
+            $table->foreignId('currency_id')->constrained()->onDelete('cascade');
             $table->string('title');
-            $table->integer('value');
-            $table->integer('quantity')->default(0);
+            $table->decimal('amount', 15, 2);
             $table->timestamps();
             $table->softDeletes();
         });

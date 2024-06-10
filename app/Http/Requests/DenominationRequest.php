@@ -13,7 +13,6 @@ class DenominationRequest extends FormRequest
     public function rules()
     {
         return [
-            'currency_id' => 'required|exists:currencies,id',
             'title' => 'required|string|max:255',
             'amount' => 'required|numeric|min:0.01',
         ];

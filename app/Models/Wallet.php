@@ -11,11 +11,14 @@ class Wallet extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+
+        'name',
+        'slug',
         'balance',
         'slug',
         'user_id',
         'currency_id',
-        'name'
+        'user_id',
     ];
 
     public function user()
@@ -23,5 +26,11 @@ class Wallet extends Model
         return $this->belongsTo(User::class);
     }
 
-    // Other relationships and methods...
+    public function denominations()
+    {
+        return $this->belongsToMany(Denomination::class, 'wallet_denomination')
+                    ->withTimestamps();
+    }
+
+
 }

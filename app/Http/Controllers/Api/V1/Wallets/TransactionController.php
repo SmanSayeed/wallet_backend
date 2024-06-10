@@ -61,4 +61,10 @@ class TransactionController extends Controller
 
         return ResponseHelper::success('Transaction deleted successfully');
     }
+
+    public function userTransactions(Request $request)
+    {
+        $transactions = $this->transactionService->getUserTransactions($request->user()->id);
+        return ResponseHelper::success('User transactions retrieved successfully', $transactions);
+    }
 }

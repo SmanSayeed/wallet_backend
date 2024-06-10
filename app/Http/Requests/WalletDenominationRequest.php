@@ -3,7 +3,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class TransactionRequest extends FormRequest
+class WalletDenominationRequest extends FormRequest
 {
     public function authorize()
     {
@@ -13,9 +13,10 @@ class TransactionRequest extends FormRequest
     public function rules()
     {
         return [
+            'user_id'=>'required|exists:users,id',
+            'currency_id'=>'required|exists:currencies,id',
             'wallet_id' => 'required|exists:wallets,id',
-            'amount' => 'required|numeric|min:0.01',
-            'type' => 'required|in:add,withdraw',
+            'denomination_id' => 'required|exists:denominations,id',
         ];
     }
 }
