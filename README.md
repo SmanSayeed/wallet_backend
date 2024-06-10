@@ -30,6 +30,7 @@ composer update
 3. Copy .env.example to .env, setup database and use following commands:
 ```
 php artisan key generate
+php artisan queue:table
 php artisan migrate --seed
 php artisan passport::install
 ```
