@@ -13,6 +13,10 @@ Frontend: Next JS 14
 
 Database: MySQL
 
+## API Documentation
+
+[API Documentation](https://www.postman.com/universal-shuttle-184021/workspace/wdms/collection/10943642-cec55610-56fd-444f-b851-a91776964783?action=share&creator=10943642&active-environment=10943642-b997e5f9-2168-4728-8512-2278cd4bd7a5)
+
 
 ## System Design Planning and Flow Chart
 
@@ -20,10 +24,8 @@ Database: MySQL
 
 ## Task progress:
 
-[Open Task progress google sheet link (Not availablt right now)](https://docs.google.com/spreadsheets/d/1BTnx7c_VrUTk_ZFVzF7VGoxXEa7UwFhHq0XzuN9QNZw/edit?usp=sharing)
+[Open Task progress google sheet link](https://docs.google.com/spreadsheets/d/1BTnx7c_VrUTk_ZFVzF7VGoxXEa7UwFhHq0XzuN9QNZw/edit?usp=sharing)
 
-## API Documentation
-[Open API Documentation (Not availablt right now)]()
 
 
 ### 1# Install backend
