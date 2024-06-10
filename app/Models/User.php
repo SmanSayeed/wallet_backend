@@ -5,8 +5,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
+
+use App\Notifications\VerifyEmailNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-class User extends Authenticatable /*implements MustVerifyEmail*/
+class User extends Authenticatable implements MustVerifyEmail
 
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -30,6 +32,8 @@ class User extends Authenticatable /*implements MustVerifyEmail*/
         'role',
         'nid',
         'profile_image',
+        'otp',
+        'otp_expires_at',
     ];
 
     /**
@@ -49,11 +53,17 @@ class User extends Authenticatable /*implements MustVerifyEmail*/
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'otp_expires_at' => 'datetime',
     ];
 
     public function wallets()
     {
         return $this->hasMany(Wallet::class);
+    }
+
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new VerifyEmailNotification());
     }
 
 }

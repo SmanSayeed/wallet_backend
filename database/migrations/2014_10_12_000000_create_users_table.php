@@ -24,6 +24,8 @@ class CreateUsersTable extends Migration
             $table->enum('role', ['admin', 'user'])->default('user');
             $table->string('nid')->nullable(false);
             $table->string('profile_image')->nullable();
+            $table->string('otp')->nullable();
+            $table->timestamp('otp_expires_at')->nullable();
             $table->string('remember_token')->nullable();
             $table->timestamps();
         });

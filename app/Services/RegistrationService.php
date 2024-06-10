@@ -3,8 +3,9 @@
 namespace App\Services;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Facades\Hash;
+use App\Events\UserRegistered;
 
 class RegistrationService
 {
@@ -21,7 +22,8 @@ class RegistrationService
             'nid' => $data['nid'],
         ]);
 
-        event(new Registered($user));
+        // event(new Registered($user));
+        event(new UserRegistered($user));
 
         return $user;
     }

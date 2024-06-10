@@ -9,8 +9,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use App\Notifications\VerifyEmailNotification;
 
-class SendVerificationEmail implements ShouldQueue
+class SendVerificationEmailJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     protected $user;
@@ -28,6 +29,7 @@ class SendVerificationEmail implements ShouldQueue
      */
     public function handle(): void
     {
+        $this->user->notify(new VerifyEmailNotification());
         // $email = new VerifyEmail($this->user);
         // Mail::to($this->user->email)->send($email);
     }
