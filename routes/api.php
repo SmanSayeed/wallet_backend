@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\Users\UsersController;
 use App\Http\Controllers\Api\V1\Wallets\CurrencyController;
 use App\Http\Controllers\Api\V1\Wallets\TransactionController;
 use App\Http\Controllers\Api\V1\Wallets\WalletDenominationController;
+use App\Http\Controllers\DataController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +24,7 @@ use App\Http\Controllers\Api\V1\Wallets\DenominationController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
+Route::post('/process-data', [DataController::class, 'processData']);
 
 // Version 1 API routes
 Route::prefix('v1')->group(function () {

@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Events\DataProcessingRequested;
+use App\Listeners\DataProcessingRequestedListener;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -21,6 +23,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         UserRegistered::class => [
             SendVerificationEmail::class,
+        ],
+        DataProcessingRequested::class => [
+            DataProcessingRequestedListener::class,
         ],
     ];
 
