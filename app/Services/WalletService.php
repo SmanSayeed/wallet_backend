@@ -19,7 +19,8 @@ class WalletService
 
     public function createWallet(User $user, array $data)
     {
-        if (!$this->checkIfSameUser($data->user_id)) {
+
+        if ($data['user_id'] !== $user->id) {
             return false;
         }
         return $user->wallets()->create($data);

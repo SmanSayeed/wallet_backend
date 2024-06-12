@@ -16,6 +16,6 @@ class LoginService
         $user = Auth::user();
         $token = $user->createToken('Personal Access Token')->accessToken;
 
-        return ResponseHelper::success('Login successful', ['token' => $token]);
+        return ResponseHelper::success('Login successful', ['token' => $token, 'user' => $user]);
     }
 }

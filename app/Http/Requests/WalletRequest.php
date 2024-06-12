@@ -18,9 +18,7 @@ class WalletRequest extends FormRequest
             'user_id'=>'required|exists:users,id',
             'balance'=>'numeric',
             'currency_id' => 'required|exists:currencies,id',
-            'user_id'=> 'required|exists:users,id',
-            'name'=> 'required|string|max:255',
-            'slug'=> 'required|string|max:255',
+
         ];
     }
 }

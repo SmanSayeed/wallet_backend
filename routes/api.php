@@ -35,6 +35,7 @@ Route::prefix('v1')->group(function () {
     // Auth routes
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/validate-otp', [AuthController::class, 'validateOtp']);
 
     Route::middleware('auth:api')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
@@ -55,7 +56,10 @@ Route::prefix('v1')->group(function () {
 
 
         // Authenticated and Verified routes
-        Route::middleware('verified')->group(function () {
+
+        // Route::middleware('verified')
+        // ->group(function ()
+        // {
             // User routes
             Route::get('/user/profile', [ProfileController::class, 'show']);
 
@@ -80,7 +84,7 @@ Route::prefix('v1')->group(function () {
 
             // User Transactions
             Route::get('user/transactions', [TransactionController::class, 'userTransactions']);
-        });
+        // });
     });
 
     // Route for unauthorized token

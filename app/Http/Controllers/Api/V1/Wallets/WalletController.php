@@ -25,6 +25,7 @@ class WalletController extends Controller
 
     public function store(WalletRequest $request)
     {
+        // dd("ji");
         $wallet = $this->walletService->createWallet($request->user(), $request->validated());
         return ResponseHelper::success('Wallet created successfully', $wallet, 201);
     }

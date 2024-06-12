@@ -76,4 +76,8 @@ public function verifyOtp(Request $request)
     return response()->json(['message' => 'Invalid or expired OTP.'], 400);
 }
 
+public function validateOtp(Request $request){
+    return ResponseHelper::success('Otp validated successfully',[], 201);
+}
+
 }
