@@ -1,5 +1,7 @@
 <?php
 
+use App\Mail\VerifyEmail;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,4 +17,17 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
+});
+Route::get('/test-email', function () {
+    $user = User::find(1); // Make sure to replace with a valid user ID
+
+    try {
+        Mail::to($user->email)->send(new VerifyEmail($user));
+        return 'Email sent successfully!';
+    } catch (\Exception $e) {
+        Log::error('Failed to send test email', [
+            'error' => $e->getMessage(),
+        ]);
+        return 'Failed to send email';
+    }
 });

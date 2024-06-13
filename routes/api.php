@@ -42,8 +42,8 @@ Route::prefix('v1')->group(function () {
 
         // Email verification routes
         Route::get('/verify-email/{id}/{hash}', [AuthController::class, 'verify'])
-            ->middleware(['signed'])
-            ->name('verification.verify');
+        ->middleware(['signed'])
+        ->name('verification.verify');
 
         Route::post('/email/verification-notification', function (Request $request) {
             $request->user()->sendEmailVerificationNotification();

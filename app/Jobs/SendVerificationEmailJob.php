@@ -10,18 +10,19 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Notifications\VerifyEmailNotification;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class SendVerificationEmailJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     protected $user;
+    protected $token;
 
-    /**
-     * Create a new job instance.
-     */
-    public function __construct(User $user)
+    public function __construct($user, $token)
     {
         $this->user = $user;
+        $this->token = $token;
     }
 
     /**
@@ -29,8 +30,17 @@ class SendVerificationEmailJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $this->user->notify(new VerifyEmailNotification());
+        // $this->user->notify(new VerifyEmailNotification());
         // $email = new VerifyEmail($this->user);
         // Mail::to($this->user->email)->send($email);
+
+          try {
+            Mail::to($this->user->email)->send(new VerifyEmail($this->user, $this->token));
+        } catch (\Exception $e) {
+            Log::error('Failed to send verification email', [
+                'user_id' => $this->user->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }

@@ -16,13 +16,14 @@ class UserRegistered implements ShouldQueue
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
     public $user;
-    /**
-     * Create a new event instance.
-     */
-    public function __construct(User $user)
+    public $token;
+
+    public function __construct(User $user, $token)
     {
         $this->user = $user;
+        $this->token = $token;
     }
+
 
     /**
      * Get the channels the event should broadcast on.

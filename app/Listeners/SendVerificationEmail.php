@@ -24,7 +24,7 @@ class SendVerificationEmail implements ShouldQueue
      */
     public function handle(UserRegistered $event): void
     {
-        SendVerificationEmailJob::dispatch($event->user);
+        SendVerificationEmailJob::dispatch($event->user, $event->token);
         // $event->user->notify(new VerifyEmailNotification());
     }
 }

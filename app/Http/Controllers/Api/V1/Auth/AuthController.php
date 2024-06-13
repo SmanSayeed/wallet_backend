@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Auth;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Mail\OtpMail;
+use App\Models\User;
 use App\Services\LoginService;
 use App\Services\RegistrationService;
 use App\Services\UserService;
@@ -12,6 +13,7 @@ use App\Http\Requests\LoginUserRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
@@ -48,6 +50,53 @@ class AuthController extends Controller
         return ResponseHelper::success('User logged out successfully');
     }
 
+    public function verify(Request $request, $id, $hash)
+    {
+        dd($request,$id,$hash);
+        // Find the user by ID
+        $user = User::findOrFail($id);
+
+        // Check if the hash matches the user's email hash
+        if (! hash_equals($hash, sha1($user->email))) {
+            return ResponseHelper::error('Invalid verification link.', 403);
+        }
+
+        // Check if the token is valid
+        $token = $request->query('token');
+        if (! $this->isValidToken($token, $user)) {
+            return ResponseHelper::error('Invalid or expired token.', 403);
+        }
+
+        // Verify the user's email
+        if (! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
+
+
+        // Authenticate the user
+        Auth::login($user);
+
+        // Return success response
+        return ResponseHelper::success('Email verified successfully', $user);
+    }
+
+
+    protected function isValidToken($token, $user)
+{
+    // Check if the token belongs to the user
+    $tokenRecord = $user->tokens()->where('token', hash('sha256', $token))->first();
+
+    if (!$tokenRecord) {
+        return false;
+    }
+
+    // Check if the token is revoked or expired
+    if ($tokenRecord->revoked || Carbon::parse($tokenRecord->expires_at)->isPast()) {
+        return false;
+    }
+
+    return true;
+}
     public function sendOtp(Request $request)
 {
     $user = $request->user();

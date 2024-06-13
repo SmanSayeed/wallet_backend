@@ -2,10 +2,13 @@
 
 namespace App\Services;
 
+use App\Jobs\SendVerificationEmailJob;
+use App\Mail\VerifyEmail;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Hash;
 use App\Events\UserRegistered;
+use Illuminate\Support\Facades\Mail;
 
 class RegistrationService
 {
@@ -22,9 +25,21 @@ class RegistrationService
             'nid' => $data['nid'],
         ]);
 
-        // event(new Registered($user));
-        event(new UserRegistered($user));
+        // Obtain the OAuth2 token for the user
+        $token = $this->getOAuth2TokenForUser($user);
+
+        // Dispatch the job with the user and token
+        event(new UserRegistered($user, $token));
 
         return $user;
+    }
+
+    protected function getOAuth2TokenForUser($user)
+    {
+        // Create a token for the user
+        $tokenResult = $user->createToken('EmailVerificationToken');
+        $token = $tokenResult->accessToken;
+
+        return $token;
     }
 }
