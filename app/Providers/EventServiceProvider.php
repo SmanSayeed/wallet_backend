@@ -10,6 +10,8 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvi
 use Illuminate\Support\Facades\Event;
 use App\Listeners\SendVerificationEmail;
 use App\Events\UserRegistered;
+use App\Listeners\SendOtpEmailListener;
+use App\Events\SendOtpEmailEvent;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -25,6 +27,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         UserRegistered::class => [
             SendVerificationEmail::class,
+        ],
+        SendOtpEmailEvent::class => [
+            SendOtpEmailListener::class,
         ],
         DataProcessingRequested::class => [
             DataProcessingRequestedListener::class,

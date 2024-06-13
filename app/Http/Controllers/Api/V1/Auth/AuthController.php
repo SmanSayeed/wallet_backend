@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api\V1\Auth;
 
+use App\Events\SendOtpEmailEvent;
 use App\Helpers\ResponseHelper;
 use App\Http\Controllers\Controller;
 use App\Mail\OtpMail;
@@ -16,7 +17,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-
+use Illuminate\Support\Facades\Log;
 class AuthController extends Controller
 {
     protected $registrationService;
@@ -36,11 +37,14 @@ class AuthController extends Controller
     }
 
 
-    public function login(LoginUserRequest $request)
+    public function login(LoginUserRequest $request): JsonResponse
     {
         $credentials = $request->validated();
-        return $this->loginService->login($credentials);
+
+        // Attempt login with OTP verification
+        return $this->loginService->loginWithOtp($credentials);
     }
+
 
     public function logout(Request $request)
     {
@@ -86,7 +90,7 @@ protected function isValidToken($token, $user)
     return true;
 
     // Retrieve the user's tokens from oauth_access_tokens table
-    $tokens = $user->tokens;
+    // $tokens = $user->tokens;
 
     // dd($tokens);
     // Check if the provided token matches any of the user's valid tokens
@@ -101,36 +105,19 @@ protected function isValidToken($token, $user)
 
     // return false;
 }
-    public function sendOtp(Request $request)
-{
-    $user = $request->user();
-    $otp = rand(100000, 999999);
-    $user->update([
-        'otp' => $otp,
-        'otp_expires_at' => Carbon::now()->addMinutes(10),
-    ]);
-
-    Mail::to($user->email)->send(new OtpMail($otp));
-    return response()->json(['message' => 'OTP sent successfully.']);
-}
-
 public function verifyOtp(Request $request)
-{
-    $request->validate([
-        'otp' => 'required|numeric',
-    ]);
+    {
+        // Validate request data
+        $request->validate([
+            'email' => 'required|string|email',
+            'otp' => 'required|string',
+        ]);
 
-    $user = $request->user();
-    if ($user->otp === $request->otp && $user->otp_expires_at->isFuture()) {
-        $user->update(['otp' => null, 'otp_expires_at' => null]);
-        return response()->json(['message' => 'OTP verified successfully.']);
+        // Verify OTP
+        $response = $this->loginService->verifyOtp($request->email, $request->otp);
+
+        // Return response using ResponseHelper
+        return $response;
     }
-
-    return response()->json(['message' => 'Invalid or expired OTP.'], 400);
-}
-
-public function validateOtp(Request $request){
-    return ResponseHelper::success('Otp validated successfully',[], 201);
-}
 
 }
