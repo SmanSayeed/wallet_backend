@@ -37,13 +37,16 @@ Route::prefix('v1')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/validate-otp', [AuthController::class, 'validateOtp']);
 
+
+    Route::get('/verify-email/{id}/{hash}', [AuthController::class, 'verify'])
+    ->middleware(['signed'])
+    ->name('verification.verify');
+
     Route::middleware('auth:api')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
 
         // Email verification routes
-        Route::get('/verify-email/{id}/{hash}', [AuthController::class, 'verify'])
-        ->middleware(['signed'])
-        ->name('verification.verify');
+
 
         Route::post('/email/verification-notification', function (Request $request) {
             $request->user()->sendEmailVerificationNotification();

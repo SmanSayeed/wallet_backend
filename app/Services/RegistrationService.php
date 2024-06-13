@@ -26,7 +26,10 @@ class RegistrationService
         ]);
 
         // Obtain the OAuth2 token for the user
-        $token = $this->getOAuth2TokenForUser($user);
+        // $token = $this->getOAuth2TokenForUser($user);
+         // Create a token for the user
+         $token = 'EmailVerificationToken';
+
 
         // Dispatch the job with the user and token
         event(new UserRegistered($user, $token));
