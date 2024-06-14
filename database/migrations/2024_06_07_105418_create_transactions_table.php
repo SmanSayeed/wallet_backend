@@ -14,6 +14,8 @@ class CreateTransactionsTable extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('wallet_id')->constrained()->onDelete('cascade');
             $table->foreignId('currency_id')->constrained()->onDelete('cascade');
+            $table->string('currency_name');
+            $table->string('currency_symbol');
             $table->enum('type', ['deposit', 'withdrawal']);
             $table->decimal('amount', 15, 2);
             $table->string('payment_gateway');
@@ -21,6 +23,7 @@ class CreateTransactionsTable extends Migration
             $table->string('otp')->nullable();
             $table->timestamp('otp_sent_at')->nullable();
             $table->timestamp('otp_verified_at')->nullable();
+            $table->timestamp('otp_expires_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

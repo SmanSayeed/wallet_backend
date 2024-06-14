@@ -18,6 +18,7 @@ class Wallet extends Model
         'slug',
         'user_id',
         'currency_id',
+        'deposited_balance'
     ];
 
     public function user()

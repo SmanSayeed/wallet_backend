@@ -21,6 +21,8 @@ class CreateUsersTable extends Migration
             $table->string('ip_address')->nullable();
             $table->integer('login_attempts')->default(0);
             $table->boolean('status')->default(true);
+            $table->boolean('is_freezed')->default(false);
+            $table->timestamp('freezed_at')->nullable();
             $table->enum('role', ['admin', 'user'])->default('user');
             $table->string('nid')->nullable(false);
             $table->string('profile_image')->nullable();

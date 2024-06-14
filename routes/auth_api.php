@@ -1,0 +1,66 @@
+<?php
+
+use App\Helpers\ResponseHelper;
+use App\Http\Controllers\Api\V1\Auth\AuthController;
+use App\Http\Controllers\Api\V1\Users\ProfileController;
+use App\Http\Controllers\Api\V1\Users\UsersController;
+use App\Http\Controllers\Api\V1\Wallets\CurrencyController;
+use App\Http\Controllers\Api\V1\Wallets\TransactionController;
+use App\Http\Controllers\Api\V1\Wallets\WalletDenominationController;
+use App\Http\Controllers\DataController;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\Wallets\WalletController;
+use App\Http\Controllers\Api\V1\Wallets\DenominationController;
+
+/*
+|--------------------------------------------------------------------------
+|Authenticated API Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for application.
+|
+*/
+
+        Route::post('/logout', [AuthController::class, 'logout']);
+
+        Route::post('/email/verification-notification', function (Request $request) {
+            $request->user()->sendEmailVerificationNotification();
+            return response()->json(['message' => 'Verification link sent!']);
+        })->middleware('throttle:6,1')->name('verification.send');
+
+        Route::get('/email/verify', function () {
+            return response()->json(['message' => 'Your email address is not verified.']);
+        })->name('verification.notice');
+
+
+
+            Route::get('/user/profile', [ProfileController::class, 'show']);
+
+            Route::get('/users', [UsersController::class, 'users']);
+
+
+
+            // Wallets and Transactions routes
+            Route::resource('wallets', WalletController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
+            Route::resource('currencies', CurrencyController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
+            Route::resource('transactions', TransactionController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
+
+            // Wallet Denomination routes
+            Route::get('/wallets/{walletId}/get-denominations', [WalletDenominationController::class, 'getDenominations'])->name('wallets.get-denominations');
+            Route::post('/wallets/attach-denomination', [WalletDenominationController::class, 'attach'])->name('wallets.attach-denomination');
+
+            Route::post('/wallets/detach-denomination', [WalletDenominationController::class, 'detach'])->name('wallets.detach-denomination');
+
+            // Denomination routes
+            Route::apiResource('currencies.denominations', DenominationController::class)->except(['create', 'edit']);
+            Route::delete('currencies/{currency}/denominations/{denomination}/force', [DenominationController::class, 'forceDestroy'])->name('currencies.denominations.forceDestroy');
+            Route::patch('currencies/{currency}/denominations/{denomination}/restore', [DenominationController::class, 'restore'])->name('currencies.denominations.restore');
+
+            // User Transactions
+            Route::get('user/transactions', [TransactionController::class, 'userTransactions']);
+
+
+
+

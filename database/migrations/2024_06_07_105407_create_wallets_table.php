@@ -17,6 +17,7 @@ class CreateWalletsTable extends Migration
             $table->string('name');
             $table->string('slug');
             $table->decimal('balance', 15, 2)->default(0.00);
+            $table->decimal('deposited_balance', 15, 2)->default(0.00);
             $table->timestamps();
             $table->softDeletes();
         });
