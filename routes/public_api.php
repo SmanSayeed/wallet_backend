@@ -27,7 +27,6 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/send-otp', [AuthController::class, 'sendOtp'])->name('send-otp');// it
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 
-
 Route::get('/verify-email/{id}/{hash}', [AuthController::class, 'verify'])
     ->middleware(['signed'])
     ->name('verification.verify');

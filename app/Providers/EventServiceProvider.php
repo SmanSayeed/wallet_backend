@@ -13,6 +13,15 @@ use App\Events\UserRegistered;
 use App\Listeners\SendOtpEmailListener;
 use App\Events\SendOtpEmailEvent;
 
+use App\Listeners\HandlePaymentSuccess;
+use App\Events\PaymentSuccessEvent;
+
+use App\Listeners\HandlePaymentFailure;
+use App\Events\PaymentFailureEvent;
+
+use App\Listeners\SendEmailListener;
+use App\Events\SendEmailEvent;
+
 class EventServiceProvider extends ServiceProvider
 {
     /**
@@ -33,6 +42,15 @@ class EventServiceProvider extends ServiceProvider
         ],
         DataProcessingRequested::class => [
             DataProcessingRequestedListener::class,
+        ],
+        PaymentSuccessEvent::class => [
+            HandlePaymentSuccess::class,
+        ],
+        PaymentFailureEvent::class => [
+            HandlePaymentFailure::class,
+        ],
+        SendEmailEvent::class => [
+            SendEmailListener::class,
         ],
     ];
 

@@ -22,7 +22,7 @@ class Denomination extends Model
     public function wallets()
     {
         return $this->belongsToMany(Wallet::class, 'wallet_denomination', 'denomination_id', 'wallet_id')
-                    ->withPivot('id', 'user_id', 'currency_id', 'amount')
-                    ->withTimestamps();
+            ->withPivot('id', 'user_id', 'currency_id', 'amount', 'is_deposited', 'is_withdraw')
+            ->withTimestamps();
     }
 }
