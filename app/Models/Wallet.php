@@ -27,8 +27,16 @@ class Wallet extends Model
 
     public function denominations()
     {
-        return $this->belongsToMany(Denomination::class, 'wallet_denomination')
+        return $this->belongsToMany(Denomination::class, 'wallet_denomination', 'wallet_id', 'denomination_id')
+                    ->withPivot('id', 'user_id', 'currency_id', 'amount')
                     ->withTimestamps();
+    }
+
+    public function getDenominationPivot($denominationId, $pivotId)
+    {
+        return $this->denominations()->where('id', $denominationId)
+                                     ->wherePivot('id', $pivotId)
+                                     ->first();
     }
 
 

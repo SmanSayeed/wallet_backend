@@ -79,7 +79,8 @@ Route::prefix('v1')->group(function () {
             // Wallet Denomination routes
             Route::get('/wallets/{walletId}/get-denominations', [WalletDenominationController::class, 'getDenominations'])->name('wallets.get-denominations');
             Route::post('/wallets/attach-denomination', [WalletDenominationController::class, 'attach'])->name('wallets.attach-denomination');
-            Route::delete('/wallets/detach-denomination', [WalletDenominationController::class, 'detach'])->name('wallets.detach-denomination');
+
+            Route::post('/wallets/detach-denomination', [WalletDenominationController::class, 'detach'])->name('wallets.detach-denomination');
 
             // Denomination routes
             Route::apiResource('currencies.denominations', DenominationController::class)->except(['create', 'edit']);

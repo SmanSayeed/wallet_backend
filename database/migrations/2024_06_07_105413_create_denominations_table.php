@@ -13,7 +13,7 @@ class CreateDenominationsTable extends Migration
             $table->id();
             $table->foreignId('currency_id')->constrained()->onDelete('cascade');
             $table->string('title');
-            $table->decimal('amount', 15, 2);
+            $table->decimal('amount', 15, 2); //value of denomination
             $table->timestamps();
             $table->softDeletes();
         });

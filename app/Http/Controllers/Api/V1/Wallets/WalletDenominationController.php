@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Wallets;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\RemoveWalletDenominationRequest;
 use App\Services\WalletDenominationService;
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\WalletDenominationRequest;
@@ -22,7 +23,16 @@ class WalletDenominationController extends Controller
     public function getDenominations($walletId)
     {
         $wallet = Wallet::with('denominations')->findOrFail($walletId);
-        return ResponseHelper::success('Denominations retrieved successfully', $wallet->denominations);
+        $denominations = $wallet->denominations->map(function ($denomination) {
+            return [
+                'id' => $denomination->id,
+                'title' => $denomination->title,
+                'amount' => $denomination->amount, // value of denomination
+                'pivot' => $denomination->pivot,
+                'pivot_id'=>$denomination->pivot->id,
+            ];
+        });
+        return ResponseHelper::success('Denominations retrieved successfully', $denominations);
     }
 
     public function attach(WalletDenominationRequest $request)
@@ -36,16 +46,22 @@ class WalletDenominationController extends Controller
         return ResponseHelper::success('Denomination attached to wallet successfully', $walletDenomination, 201);
     }
 
-    public function detach(WalletDenominationRequest $request)
+    public function detach(RemoveWalletDenominationRequest $request)
     {
-        $walletId = $request->input('wallet_id');
-        $denominationId = $request->input('denomination_id');
-        $deleted = $this->walletDenominationService->detachDenomination($walletId, $denominationId);
-
-        if (!$deleted) {
-            return ResponseHelper::error('Denomination not found in wallet', null, 404);
+        try {
+            $userId = $request->user_id;
+            if($userId!=$request->user()->id){
+                return ResponseHelper::error('Not Authorized ', null, 500);
+            }
+            $walletId = $request->input('wallet_id');
+            $denominationPivotId = $request->input('denomination_pivot_id');
+            $deleted = $this->walletDenominationService->detachDenomination($walletId, $denominationPivotId, $userId);
+            if (!$deleted) {
+                return ResponseHelper::error('Failed to detach denomination', null, 404);
+            }
+            return ResponseHelper::success('Denomination detached from wallet successfully');
+        } catch (\Exception $e) {
+            return ResponseHelper::error('An error occurred: ' . $e->getMessage(), null, 500);
         }
-
-        return ResponseHelper::success('Denomination detached from wallet successfully');
     }
 }
