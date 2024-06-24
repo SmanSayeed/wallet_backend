@@ -9,6 +9,8 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Handler extends ExceptionHandler
 {
@@ -58,5 +60,17 @@ class Handler extends ExceptionHandler
         }
 
         return redirect()->guest(route('login'));
+    }
+
+    public function render($request, Throwable $e)
+    {
+        // Handle ModelNotFoundException as JSON response
+        if ($e instanceof ModelNotFoundException || $e instanceof NotFoundHttpException) {
+            return ResponseHelper::error('Resource not found', null, 404);
+        }
+
+        // Handle other exceptions as needed
+
+        return parent::render($request, $e);
     }
 }
