@@ -35,3 +35,4 @@ Route::get('/unauthorized', function () {
     return ResponseHelper::error('Unauthorized', null, 401);
 })->name('unauthorized');
 
+Route::post('/resend-verification', [AuthController::class, 'resendVerificationEmail']);

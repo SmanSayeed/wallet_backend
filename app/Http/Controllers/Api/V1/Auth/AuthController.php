@@ -128,4 +128,28 @@ class AuthController extends Controller
         return $response;
     }
 
+    public function resendVerificationEmail(Request $request): JsonResponse
+    {
+        // Validate the request
+        $request->validate([
+            'email' => 'required|string|email',
+        ]);
+
+        // Find the user by email
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return ResponseHelper::error('User not found.', null, 404);
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return ResponseHelper::error('Email address is already verified.', null, 400);
+        }
+
+        // Use the registration service to resend the verification email
+        $this->registrationService->sendVerificationEmail($user);
+
+        return ResponseHelper::success('Verification email resent successfully.', null, 200);
+    }
+
 }

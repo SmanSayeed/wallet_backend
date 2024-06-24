@@ -25,14 +25,8 @@ class RegistrationService
             'nid' => $data['nid'],
         ]);
 
-        // Obtain the OAuth2 token for the user
-        // $token = $this->getOAuth2TokenForUser($user);
-         // Create a token for the user
-         $token = 'EmailVerificationToken';
-
-
-        // Dispatch the job with the user and token
-        event(new UserRegistered($user, $token));
+        // Send verification email
+        $this->sendVerificationEmail($user);
 
         return $user;
     }
@@ -45,4 +39,15 @@ class RegistrationService
 
         return $token;
     }
+
+    public function sendVerificationEmail(User $user)
+    {
+        // Obtain the OAuth2 token for the user
+        $token = $this->getOAuth2TokenForUser($user);
+
+        // Dispatch the job with the user and token
+        event(new UserRegistered($user, $token));
+    }
+
+
 }
