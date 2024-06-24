@@ -14,15 +14,17 @@ class DepositController extends Controller
 
     public function __construct(DepositService $depositService)
     {
-        $this->DepositService = $depositService;
+        // Typo here: this should be $this->depositService
+        $this->depositService = $depositService;
     }
 
     public function makeDeposit(DepositRequest $request)
     {
+        // dd($request);
         try {
             $user = $request->user();
             $wallet_denomination_pivot_ids = $request->input('wallet_denomination_pivot_ids');
-            $result = $this->depositService->makeDeposit($user, $wallet_denomination_pivot_ids);
+            $result = $this->depositService->handleDeposit($user, $wallet_denomination_pivot_ids);
             return ResponseHelper::success('Deposit created successfully', $result);
         } catch (\Exception $e) {
             return ResponseHelper::error($e->getMessage(), 400);

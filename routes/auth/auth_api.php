@@ -52,7 +52,7 @@ Route::resource('transactions', TransactionController::class)->only(['index', 's
 Route::get('user/transactions', [TransactionController::class, 'userTransactions']);
 
 /*------------- Deposite ----------- */
-Route::post('/make-deposit', [DepositController::class, 'makeDeposit'])->name('make.deposit');
+Route::post('make-deposit', [DepositController::class, 'makeDeposit'])->name('make.deposit');
 
 
 

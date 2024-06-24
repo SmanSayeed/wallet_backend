@@ -27,7 +27,7 @@ class DepositRequest extends FormRequest
                 },
             ],
             'wallet_denomination_pivot_ids' => 'required|array',
-            'wallet_denomination_pivot_ids.*' => 'exists:wallet_denomination,id',
+            'wallet_denomination_pivot_ids.*' => 'exists:wallet_denominations,id',
         ];
     }
 

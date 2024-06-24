@@ -39,12 +39,12 @@ class WalletBalanceService
             ->delete();
     }
 
-    private function incrementWalletBalance(Wallet $wallet, Denomination $denomination, $amount)
+    public function incrementWalletBalance(Wallet $wallet, Denomination $denomination, $amount)
     {
         $wallet->increment('balance', $denomination->amount * $amount);
     }
 
-    private function decrementWalletBalance(Wallet $wallet, $pivotAmount, $denominationValue)
+    public function decrementWalletBalance(Wallet $wallet, $pivotAmount, $denominationValue)
     {
         $wallet->decrement('balance', $pivotAmount * $denominationValue);
     }

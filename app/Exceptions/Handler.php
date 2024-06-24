@@ -4,6 +4,7 @@ namespace App\Exceptions;
 
 use App\Helpers\ResponseHelper;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\JsonResponse;
@@ -66,7 +67,8 @@ class Handler extends ExceptionHandler
     {
         // Handle ModelNotFoundException as JSON response
         if ($e instanceof ModelNotFoundException || $e instanceof NotFoundHttpException) {
-            return ResponseHelper::error('Resource not found', null, 404);
+            Log::error($e);
+            return ResponseHelper::error('Resource not found. '.$e->getMessage(), null, 404);
         }
         // Handle other exceptions as needed
         return parent::render($request, $e);
