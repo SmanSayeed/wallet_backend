@@ -21,8 +21,8 @@ class DepositController extends Controller
     {
         try {
             $user = $request->user();
-            $denominationIds = $request->input('denomination_ids');
-            $result = $this->depositService->makeDeposit($user, $denominationIds);
+            $wallet_denomination_pivot_ids = $request->input('wallet_denomination_pivot_ids');
+            $result = $this->depositService->makeDeposit($user, $wallet_denomination_pivot_ids);
             return ResponseHelper::success('Deposit created successfully', $result);
         } catch (\Exception $e) {
             return ResponseHelper::error($e->getMessage(), 400);

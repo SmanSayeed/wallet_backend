@@ -1,24 +1,27 @@
 <?php
-
 namespace App\Services;
 
-use App\Events\PaymentSuccessEvent;
-use App\Events\PaymentFailureEvent;
 use App\Jobs\ProcessPayment;
 use App\Models\Wallet;
 use App\Models\WalletDenomination;
 use App\Models\Transaction;
-use App\Models\Currency; // Import the Currency model
+use App\Models\Currency;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 
 class DepositService
 {
-    public function makeDeposit($user, array $denominationIds)
+    protected $walletBalanceService;
+
+    public function __construct(WalletBalanceService $walletBalanceService)
     {
-        return DB::transaction(function () use ($user, $denominationIds) {
+        $this->walletBalanceService = $walletBalanceService;
+    }
+
+    public function makeDeposit($user, array $wallet_denomination_pivot_ids)
+    {
+        return DB::transaction(function () use ($user, $wallet_denomination_pivot_ids) {
             // Fetch denominations and calculate total amount
-            $denominations = WalletDenomination::whereIn('id', $denominationIds)
+            $denominations = WalletDenomination::whereIn('id', $wallet_denomination_pivot_ids)
                 ->where('is_deposited', false)
                 ->where('user_id', $user->id)
                 ->get();
@@ -34,9 +37,7 @@ class DepositService
 
             // Update wallet balances
             $wallet = Wallet::find($denominations->first()->wallet_id);
-            $wallet->balance -= $totalAmount;
-            $wallet->deposited_balance += $totalAmount;
-            $wallet->save();
+            $this->walletBalanceService->decrementWalletBalance($wallet, $totalAmount, 1); // totalAmount is already calculated
 
             // Fetch currency details
             $currency = Currency::find($denominations->first()->currency_id);
@@ -55,7 +56,7 @@ class DepositService
             ]);
 
             // Dispatch a job to process the payment asynchronously
-            ProcessPayment::dispatch($transaction, $denominationIds,$currency->code);
+            ProcessPayment::dispatch($transaction, $wallet_denomination_pivot_ids, $currency->code);
 
             return $transaction;
         });
