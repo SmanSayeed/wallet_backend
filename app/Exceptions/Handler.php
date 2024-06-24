@@ -68,9 +68,7 @@ class Handler extends ExceptionHandler
         if ($e instanceof ModelNotFoundException || $e instanceof NotFoundHttpException) {
             return ResponseHelper::error('Resource not found', null, 404);
         }
-
         // Handle other exceptions as needed
-
         return parent::render($request, $e);
     }
 }

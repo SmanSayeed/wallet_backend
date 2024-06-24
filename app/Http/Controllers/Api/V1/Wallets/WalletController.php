@@ -6,8 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Services\WalletService;
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\WalletRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 class WalletController extends Controller
 {
     protected $walletService;
@@ -23,11 +26,20 @@ class WalletController extends Controller
         return ResponseHelper::success('Wallets retrieved successfully', $wallets);
     }
 
-    public function store(WalletRequest $request)
+    public function store(WalletRequest $request): JsonResponse
     {
-        // dd("ji");
-        $wallet = $this->walletService->createWallet($request->user(), $request->validated());
-        return ResponseHelper::success('Wallet created successfully', $wallet, 201);
+        try {
+            if(Auth::user()->id!=$request->user()->id){
+                return ResponseHelper::error('Unauthorized', null, 401);
+            }
+            $wallet = $this->walletService->createWallet($request->user(), $request->validated());
+            return ResponseHelper::success('Wallet created successfully', $wallet, 201);
+        } catch (Throwable $e) {
+            // Log the error if needed
+            Log::error($e);
+            // Return a JSON response with the error message
+            return ResponseHelper::error('An error occurred while creating the wallet.', null, 500);
+        }
     }
 
     public function show(Request $request, $id)
