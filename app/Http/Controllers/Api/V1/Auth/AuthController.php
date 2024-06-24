@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+
 class AuthController extends Controller
 {
     protected $registrationService;
@@ -29,7 +30,7 @@ class AuthController extends Controller
         $this->loginService = $loginService;
     }
 
-    public function register(RegisterUserRequest $request):JsonResponse
+    public function register(RegisterUserRequest $request): JsonResponse
     {
         // dd($request);
         $user = $this->registrationService->register($request->validated());
@@ -40,6 +41,13 @@ class AuthController extends Controller
     public function login(LoginUserRequest $request): JsonResponse
     {
         $credentials = $request->validated();
+
+        // Check if user exists and email is verified
+        $user = User::where('email', $credentials['email'])->first();
+
+        if (!$user || !$user->hasVerifiedEmail()) {
+            return ResponseHelper::error('Your email address is not verified.', null, 403);
+        }
 
         // Attempt login with OTP verification
         return $this->loginService->loginWithOtp($credentials);
@@ -56,56 +64,56 @@ class AuthController extends Controller
     }
 
     public function verify(Request $request, $id, $hash)
-{
-    // dump($request,$id,$hash);
-    // Find the user by ID
-    $user = User::findOrFail($id);
+    {
+        // dump($request,$id,$hash);
+        // Find the user by ID
+        $user = User::findOrFail($id);
 
-    // Check if the hash matches the user's email hash
-    if (! hash_equals($hash, sha1($user->email))) {
-        return ResponseHelper::error('Invalid verification link.', 403);
+        // Check if the hash matches the user's email hash
+        if (!hash_equals($hash, sha1($user->email))) {
+            return ResponseHelper::error('Invalid verification link.', 403);
+        }
+
+        // Check if the token is valid
+        $token = $request->query('token');
+
+        if (!$this->isValidToken($token, $user)) {
+            return ResponseHelper::error('Invalid or expired token.', 403);
+        }
+
+        // Verify the user's email
+        if (!$user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
+
+        // Authenticate the user if needed
+        // Auth::login($user); // Uncomment if you want to automatically login the user
+
+        // Return success response
+        return ResponseHelper::success('Email verified successfully', $user);
     }
 
-    // Check if the token is valid
-    $token = $request->query('token');
+    protected function isValidToken($token, $user)
+    {
+        return true;
 
-    if (! $this->isValidToken($token, $user)) {
-        return ResponseHelper::error('Invalid or expired token.', 403);
+        // Retrieve the user's tokens from oauth_access_tokens table
+        // $tokens = $user->tokens;
+
+        // dd($tokens);
+        // Check if the provided token matches any of the user's valid tokens
+        // foreach ($tokens as $userToken) {
+        //     dump(Hash::make($token),$userToken->id);
+        //     dd(Hash::check($token, $userToken->id));
+        //     // Compare hashed token using Hash::check
+        //     if (Hash::check($token, $userToken->id)) {
+        //         return true;
+        //     }
+        // }
+
+        // return false;
     }
-
-    // Verify the user's email
-    if (! $user->hasVerifiedEmail()) {
-        $user->markEmailAsVerified();
-    }
-
-    // Authenticate the user if needed
-    // Auth::login($user); // Uncomment if you want to automatically login the user
-
-    // Return success response
-    return ResponseHelper::success('Email verified successfully', $user);
-}
-
-protected function isValidToken($token, $user)
-{
-    return true;
-
-    // Retrieve the user's tokens from oauth_access_tokens table
-    // $tokens = $user->tokens;
-
-    // dd($tokens);
-    // Check if the provided token matches any of the user's valid tokens
-    // foreach ($tokens as $userToken) {
-    //     dump(Hash::make($token),$userToken->id);
-    //     dd(Hash::check($token, $userToken->id));
-    //     // Compare hashed token using Hash::check
-    //     if (Hash::check($token, $userToken->id)) {
-    //         return true;
-    //     }
-    // }
-
-    // return false;
-}
-public function verifyOtp(Request $request)
+    public function verifyOtp(Request $request)
     {
         // Validate request data
         $request->validate([

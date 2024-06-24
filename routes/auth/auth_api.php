@@ -5,11 +5,9 @@ use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\Users\ProfileController;
 use App\Http\Controllers\Api\V1\Users\UsersController;
 use App\Http\Controllers\Api\V1\Wallets\CurrencyController;
+use App\Http\Controllers\Api\V1\Wallets\DepositController;
 use App\Http\Controllers\Api\V1\Wallets\TransactionController;
 use App\Http\Controllers\Api\V1\Wallets\WalletDenominationController;
-use App\Http\Controllers\DataController;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\Wallets\WalletController;
 use App\Http\Controllers\Api\V1\Wallets\DenominationController;
@@ -52,6 +50,9 @@ Route::patch('currencies/{currency}/denominations/{denomination}/restore', [Deno
 /*---------- transactions -------- */
 Route::resource('transactions', TransactionController::class)->only(['index', 'store', 'show', 'update', 'destroy']);
 Route::get('user/transactions', [TransactionController::class, 'userTransactions']);
+
+/*------------- Deposite ----------- */
+Route::post('/make-deposit', [DepositController::class, 'makeDeposit'])->name('make.deposit');
 
 
 

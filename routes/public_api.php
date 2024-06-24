@@ -24,7 +24,6 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 // Login with OTP
-Route::get('/send-otp', [AuthController::class, 'sendOtp'])->name('send-otp');// it
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 
 Route::get('/verify-email/{id}/{hash}', [AuthController::class, 'verify'])
