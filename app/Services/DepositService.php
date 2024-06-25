@@ -84,7 +84,11 @@ class DepositService
             // Dispatch a job to process the payment asynchronously
             // ProcessPayment::dispatch($transaction, $wallet_denomination_pivot_ids, $currency->code);
 
-            return $transaction;
+            $transactionData = [
+                'id' => $transaction->id,
+            ];
+
+            return $transactionData;
         });
     }
 
