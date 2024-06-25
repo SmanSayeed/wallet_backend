@@ -24,8 +24,25 @@ class DepositController extends Controller
         try {
             $user = $request->user();
             $wallet_denomination_pivot_ids = $request->input('wallet_denomination_pivot_ids');
-            $result = $this->depositService->handleDeposit($user, $wallet_denomination_pivot_ids);
-            return ResponseHelper::success('Deposit created successfully', $result);
+            $result = $this->depositService->handleDepositAndSendOTP($user, $wallet_denomination_pivot_ids);
+            // return ResponseHelper::success('Deposit created successfully', $result);
+            return ResponseHelper::success('OTP sent successfully. Please verify OTP to proceed.', $result);
+        } catch (\Exception $e) {
+            return ResponseHelper::error($e->getMessage(), 400);
+        }
+    }
+
+
+    public function verifyTransactionOtp(Request $request)
+    {
+        try {
+            $user = $request->user();
+            $transactionId = $request->input('transaction_id');
+            $otp = $request->input('otp');
+
+            $result = $this->depositService->verifyOtp($user, $transactionId, $otp);
+
+            return ResponseHelper::success('OTP verified successfully. Payment processing started.', $result);
         } catch (\Exception $e) {
             return ResponseHelper::error($e->getMessage(), 400);
         }

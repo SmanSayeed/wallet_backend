@@ -41,8 +41,7 @@ class ProcessPayment implements ShouldQueue
             $this->processDeposit();
         } else {
             // Update payment status
-            $this->transaction->update(['payment_gateway_status' => 'failed']);
-
+            $this->transaction->update(['payment_gateway_status' => 'failed']); 
             // Trigger failure event
             event(new PaymentFailureEvent($this->transaction));
         }
@@ -52,28 +51,23 @@ class ProcessPayment implements ShouldQueue
     {
         $user = $this->transaction->user;
         $denominationIds = $this->denominationIds;
-
         // Fetch denominations
         $denominations = WalletDenomination::whereIn('id', $denominationIds)
             ->where('is_deposited', false)
             ->where('user_id', $user->id)
             ->get();
-
         // Calculate total amount
         $totalDepositAmount = 0;
         foreach ($denominations as $denomination) {
             $totalDepositAmount += $denomination->amount * $denomination->denomination->value;
         }
-
         // Update wallet balances
         $wallet = Wallet::find($denominations->first()->wallet_id);
         $wallet->balance -= $totalDepositAmount;
         $wallet->deposited_balance += $totalDepositAmount;
         $wallet->save();
-
         // Update denominations as deposited
         WalletDenomination::whereIn('id', $denominationIds)->update(['is_deposited' => true]);
-
         // Trigger success event
         event(new PaymentSuccessEvent($this->transaction));
     }

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('currency_id')->constrained()->onDelete('cascade');
             $table->foreignId('wallet_id')->constrained()->onDelete('cascade');
             $table->foreignId('denomination_id')->constrained()->onDelete('cascade');
-            $table->integer('amount')->default(1);
+            $table->integer('amount')->default(1); // Amount of this denomination, default is 1, it can be 2,3,4...
             $table->boolean('is_deposited')->default(false);
             $table->boolean('is_withdraw')->default(false);
             $table->timestamps();

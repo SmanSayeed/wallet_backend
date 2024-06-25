@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\SendOtpEmailEvent;
 use App\Jobs\ProcessPayment;
 use App\Models\Wallet;
 use App\Models\WalletDenomination;
@@ -18,42 +19,33 @@ class DepositService
         $this->walletBalanceService = $walletBalanceService;
     }
 
-    public function handleDeposit($user, array $wallet_denomination_pivot_ids)
-    {
-        return DB::transaction(function () use ($user, $wallet_denomination_pivot_ids) {
-            // Fetch denominations and calculate total amount
-            $wallet_denominations = WalletDenomination::whereIn('id', $wallet_denomination_pivot_ids)
-                ->where('is_deposited', false)
-                ->where('user_id', $user->id)
-                ->get();
+    public function getWalletDenominations($user,array $wallet_denomination_pivot_ids){
 
-            if ($wallet_denominations->isEmpty()) {
-                throw new \Exception('No valid denominations found.');
-            }
-            $totalAmount = $this->calculateTotalAmount($wallet_denominations);
-            // Update wallet balances
-            $wallet = Wallet::find($wallet_denominations->first()->wallet_id);
-            $this->walletBalanceService->decrementWalletBalance($wallet, $totalAmount, 1); // totalAmount is already calculated
-            // Fetch currency details
-            $currency = Currency::find($wallet_denominations->first()->currency_id);
-            // Create a transaction record
-            $transaction = Transaction::create([
-                'user_id' => $user->id,
-                'wallet_id' => $wallet->id,
-                'currency_id' => $currency->id,
-                'currency_name' => $currency->name, // Use currency name from the Currency model
-                'currency_symbol' => $currency->symbol, // Use currency symbol from the Currency model
-                'type' => 'deposit',
-                'amount' => $totalAmount,
-                'payment_gateway' => 'Dummy Payment Gateway', // Replace with actual payment gateway used
-                'payment_gateway_status' => 'pending',
-            ]);
-            // Dispatch a job to process the payment asynchronously
-            ProcessPayment::dispatch($transaction, $wallet_denomination_pivot_ids, $currency->code);
-
-            return $transaction;
-        });
+        return WalletDenomination::whereIn('id', $wallet_denomination_pivot_ids)
+        ->where('is_deposited', false)
+        ->where('user_id', $user->id)
+        ->get();
     }
+
+    public function createTransaction($user, $wallet, $currency, $totalAmount, $status, $otp)
+    {
+        $transaction = Transaction::create([
+            'user_id' => $user->id,
+            'wallet_id' => $wallet->id,
+            'currency_id' => $currency->id,
+            'currency_name' => $currency->name,
+            'currency_symbol' => $currency->symbol,
+            'type' => 'deposit',
+            'amount' => $totalAmount,
+            'payment_gateway' => 'Dummy Payment Gateway',
+            'payment_gateway_status' => $status,
+            'otp' => $otp,
+            'otp_sent_at' => now(),
+            'otp_expires_at' => now()->addMinutes(10), // OTP valid for 10 minutes
+        ]);
+        return $transaction;
+    }
+
 
     public function calculateTotalAmount($wallet_denominations){
         $totalAmount = 0;
@@ -62,4 +54,60 @@ class DepositService
         }
         return $totalAmount;
     }
+
+    public function handleDepositAndSendOTP($user, array $wallet_denomination_pivot_ids)
+    {
+        return DB::transaction(function () use ($user, $wallet_denomination_pivot_ids) {
+            // Fetch denominations and calculate total amount
+            $wallet_denominations =$this->getWalletDenominations($user, $wallet_denomination_pivot_ids);
+
+            if ($wallet_denominations->isEmpty()) {
+                throw new \Exception('No valid denominations found.');
+            }
+
+            $totalAmount = $this->calculateTotalAmount($wallet_denominations);
+            // Update wallet balances
+            $wallet = Wallet::find($wallet_denominations->first()->wallet_id);
+            /*
+            $this->walletBalanceService->decrementWalletBalance($wallet, $totalAmount, 1);
+            */
+            // totalAmount is already calculated
+            // Fetch currency details
+            $currency = Currency::find($wallet_denominations->first()->currency_id);
+            // Create a transaction record
+            $otp = rand(100000, 999999); // Generate a random 6-digit OTP
+            $transaction = $this->createTransaction($user,$wallet,$currency,$totalAmount,'pending',$otp);
+
+            // -------------------Verify OTP before transacting----------------------
+            event(new SendOtpEmailEvent($user, $otp));
+            // Dispatch a job to process the payment asynchronously
+            // ProcessPayment::dispatch($transaction, $wallet_denomination_pivot_ids, $currency->code);
+
+            return $transaction;
+        });
+    }
+
+
+    public function verifyOtp($user, $transactionId, $otp)
+    {
+        // Verify OTP before starting the transaction
+        $transaction = Transaction::where('id', $transactionId)
+            ->where('user_id', $user->id)
+            ->where('otp', $otp)
+            ->where('otp_expires_at', '>', now())
+            ->first();
+
+        if (!$transaction) {
+            throw new \Exception('Invalid or expired OTP.');
+        }
+
+        return DB::transaction(function () use ($transaction) {
+            $transaction->update(['otp_verified_at' => now()]);
+            // Proceed with the payment processing
+            ProcessPayment::dispatch($transaction, $transaction->wallet->wallet_denomination_pivot_ids, $transaction->currency->code);
+
+            return $transaction;
+        });
+    }
+
 }
