@@ -63,35 +63,70 @@ class AuthController extends Controller
         return ResponseHelper::success('User logged out successfully');
     }
 
+
     public function verify(Request $request, $id, $hash)
-    {
-        // dump($request,$id,$hash);
-        // Find the user by ID
-        $user = User::findOrFail($id);
+{
+    // Find the user by ID
+    $user = User::findOrFail($id);
 
-        // Check if the hash matches the user's email hash
-        if (!hash_equals($hash, sha1($user->email))) {
-            return ResponseHelper::error('Invalid verification link.', 403);
-        }
+    // Get frontend base URL from the environment
+    $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000');
+    $frontendUrl .= '/auth/login?message=';
 
-        // Check if the token is valid
-        $token = $request->query('token');
-
-        if (!$this->isValidToken($token, $user)) {
-            return ResponseHelper::error('Invalid or expired token.', 403);
-        }
-
-        // Verify the user's email
-        if (!$user->hasVerifiedEmail()) {
-            $user->markEmailAsVerified();
-        }
-
-        // Authenticate the user if needed
-        // Auth::login($user); // Uncomment if you want to automatically login the user
-
-        // Return success response
-        return ResponseHelper::success('Email verified successfully', $user);
+    // Check if the hash matches the user's email hash
+    if (!hash_equals($hash, sha1($user->email))) {
+        return redirect()->to($frontendUrl . 'Invalid+verification+link');
     }
+
+    // Check if the token is valid
+    $token = $request->query('token');
+
+    if (!$this->isValidToken($token, $user)) {
+        return redirect()->to($frontendUrl . 'Invalid+or+expired+token');
+    }
+
+    // Verify the user's email
+    if (!$user->hasVerifiedEmail()) {
+        $user->markEmailAsVerified();
+    }
+
+    // Authenticate the user if needed
+    // Auth::login($user); // Uncomment if you want to automatically login the user
+
+    // Redirect to frontend login page with success message
+    return redirect()->to($frontendUrl . 'Otp+verified+successfully,+please+login');
+}
+
+
+    // public function verify(Request $request, $id, $hash)
+    // {
+    //     // dump($request,$id,$hash);
+    //     // Find the user by ID
+    //     $user = User::findOrFail($id);
+
+    //     // Check if the hash matches the user's email hash
+    //     if (!hash_equals($hash, sha1($user->email))) {
+    //         return ResponseHelper::error('Invalid verification link.', 403);
+    //     }
+
+    //     // Check if the token is valid
+    //     $token = $request->query('token');
+
+    //     if (!$this->isValidToken($token, $user)) {
+    //         return ResponseHelper::error('Invalid or expired token.', 403);
+    //     }
+
+    //     // Verify the user's email
+    //     if (!$user->hasVerifiedEmail()) {
+    //         $user->markEmailAsVerified();
+    //     }
+
+    //     // Authenticate the user if needed
+    //     // Auth::login($user); // Uncomment if you want to automatically login the user
+
+    //     // Return success response
+    //     return ResponseHelper::success('Email verified successfully', $user);
+    // }
 
     protected function isValidToken($token, $user)
     {
