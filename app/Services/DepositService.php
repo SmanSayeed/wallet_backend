@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Events\SendOtpEmailEvent;
+use App\Helpers\ErrorHelper;
 use App\Jobs\ProcessPayment;
 use App\Models\Wallet;
 use App\Models\WalletDenomination;
@@ -88,7 +89,7 @@ class DepositService
     }
 
 
-    public function verifyOtp($user, $transactionId, $otp)
+    public function verifyOtp($user, $transactionId, $otp, $wallet_denomination_pivot_ids)
     {
         // Verify OTP before starting the transaction
         $transaction = Transaction::where('id', $transactionId)
@@ -97,17 +98,28 @@ class DepositService
             ->where('otp_expires_at', '>', now())
             ->first();
 
-        if (!$transaction) {
-            throw new \Exception('Invalid or expired OTP.');
-        }
 
-        return DB::transaction(function () use ($transaction) {
+            if (!$transaction) {
+                throw new \Exception(ErrorHelper::otpVerificationFailed());
+            }
+
+
+
+        return DB::transaction(function () use ($transaction,$wallet_denomination_pivot_ids) {
             $transaction->update(['otp_verified_at' => now()]);
-            // Proceed with the payment processing
-            ProcessPayment::dispatch($transaction, $transaction->wallet->wallet_denomination_pivot_ids, $transaction->currency->code);
 
-            return $transaction;
+            $currencyCode = Currency::where('id', $transaction->currency_id)->value('code');
+
+            // Proceed with the payment processing
+            ProcessPayment::dispatch($transaction, $wallet_denomination_pivot_ids, $currencyCode,true);
+
+
+            // Fetch the updated transaction after processing
+            $updatedTransaction = Transaction::findOrFail($transaction->id);
+
+            return $updatedTransaction;
         });
+
     }
 
 }

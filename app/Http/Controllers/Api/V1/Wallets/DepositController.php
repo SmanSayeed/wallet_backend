@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api\V1\Wallets;
 
+use App\Helpers\ErrorHelper;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\OtpTransactionRequest;
 use App\Services\DepositService;
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\DepositRequest;
@@ -18,7 +20,7 @@ class DepositController extends Controller
         $this->depositService = $depositService;
     }
 
-    public function makeDeposit(DepositRequest $request)
+    public function makeDepositAndSendOtp(DepositRequest $request)
     {
         // dd($request);
         try {
@@ -39,10 +41,31 @@ class DepositController extends Controller
             $user = $request->user();
             $transactionId = $request->input('transaction_id');
             $otp = $request->input('otp');
-            $result = $this->depositService->verifyOtp($user, $transactionId, $otp);
-            return ResponseHelper::success('OTP verified successfully. Payment processing started.', $result);
+            $wallet_denomination_pivot_ids = $request->input('wallet_denomination_pivot_ids');
+
+            $updatedTransaction = $this->depositService->verifyOtp($user, $transactionId, $otp, $wallet_denomination_pivot_ids);
+
+            // Check payment status in the updated transaction
+            $paymentStatus = $updatedTransaction->payment_gateway_status;
+
+            switch ($updatedTransaction->payment_gateway_status) {
+                case 'success':
+                    return ResponseHelper::success('Payment processed successfully.', $updatedTransaction);
+                case 'failed':
+                    return ResponseHelper::error('Payment processing failed.', 400);
+                case 'cancelled':
+                    return ResponseHelper::error('Payment cancelled.', 400);
+                default:
+                    return ResponseHelper::error('Payment status is pending.', 400);
+            }
         } catch (\Exception $e) {
+          // Check if the exception is due to OTP verification failure
+          if ($e->getMessage() === ErrorHelper::otpVerificationFailed()) {
             return ResponseHelper::error($e->getMessage(), 400);
         }
+
+        // Handle other exceptions
+        return ResponseHelper::error('An error occurred during payment processing.', 400);
+   }
     }
 }

@@ -14,30 +14,43 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Config;
-
+use Illuminate\Support\Facades\Log;
 class ProcessPayment implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-
     protected $transaction;
     protected $denominationIds;
     protected $currencyCode;
-    public function __construct(Transaction $transaction, array $denominationIds,$currencyCode)
+    protected $simulateSuccess;
+    public function __construct(Transaction $transaction, array $denominationIds,$currencyCode,bool $simulateSuccess = true)
     {
         $this->transaction = $transaction;
         $this->denominationIds = $denominationIds;
         $this->currencyCode = $currencyCode;
+        $this->simulateSuccess = $simulateSuccess;
     }
 
     public function handle()
     {
         // Dummy payment gateway API call
+
+        /* Payment gateway part
         $response = Http::post(Config::get('payment.gateway_url'), [
             'amount' => $this->transaction->amount,
             'currency' => $this->currencyCode
         ]);
+        */
 
-        if ($response->successful()) {
+        // $response = Http::post('https://api.stripe.com/v1/payments', [
+        //     'amount' => $this->transaction->amount,
+        //     'currency' => $this->currencyCode
+        // ]);
+
+        // Log::info('Payment Gateway Response:', ['response' => $response->json()]);
+
+        // if ($response->successful()) {
+
+        if($this->simulateSuccess) {
             $this->transaction->update(['payment_gateway_status' => 'success']);
             $this->processDeposit();
         } else {
@@ -46,6 +59,12 @@ class ProcessPayment implements ShouldQueue
             // Trigger failure event
             event(new PaymentFailureEvent($this->transaction));
         }
+
+        // Fetch the updated transaction after processing
+        $updatedTransaction = Transaction::findOrFail($this->transaction->id);
+
+        // Trigger success event with the updated transaction details
+        event(new PaymentSuccessEvent($updatedTransaction));
     }
 
     protected function processDeposit()
@@ -69,7 +88,5 @@ class ProcessPayment implements ShouldQueue
         $wallet->save();
         // Update denominations as deposited
         WalletDenomination::whereIn('id', $denominationIds)->update(['is_deposited' => true]);
-        // Trigger success event
-        event(new PaymentSuccessEvent($this->transaction));
     }
 }
