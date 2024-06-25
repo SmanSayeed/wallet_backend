@@ -13,6 +13,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Config;
 
 class ProcessPayment implements ShouldQueue
 {
@@ -31,7 +32,7 @@ class ProcessPayment implements ShouldQueue
     public function handle()
     {
         // Dummy payment gateway API call
-        $response = Http::post('https://dummy-payment-gateway/api/process', [
+        $response = Http::post(Config::get('payment.gateway_url'), [
             'amount' => $this->transaction->amount,
             'currency' => $this->currencyCode
         ]);
@@ -41,7 +42,7 @@ class ProcessPayment implements ShouldQueue
             $this->processDeposit();
         } else {
             // Update payment status
-            $this->transaction->update(['payment_gateway_status' => 'failed']); 
+            $this->transaction->update(['payment_gateway_status' => 'failed']);
             // Trigger failure event
             event(new PaymentFailureEvent($this->transaction));
         }

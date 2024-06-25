@@ -39,9 +39,7 @@ class DepositController extends Controller
             $user = $request->user();
             $transactionId = $request->input('transaction_id');
             $otp = $request->input('otp');
-
             $result = $this->depositService->verifyOtp($user, $transactionId, $otp);
-
             return ResponseHelper::success('OTP verified successfully. Payment processing started.', $result);
         } catch (\Exception $e) {
             return ResponseHelper::error($e->getMessage(), 400);
